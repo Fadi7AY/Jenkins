@@ -3,13 +3,13 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        IMAGE_NAME = 'fadi7ay/fadi_jenkins_docker'
+        IMAGE_NAME = "fadi7ay/fadi_jenkins_docker:${env.BUILD_NUMBER}"
     }
 
     stages {
         stage('Build Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:${env.BUILD_NUMBER} .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
