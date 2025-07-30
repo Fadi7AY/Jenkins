@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Build Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh 'docker build -t $IMAGE_NAME:${env.BUILD_NUMBER} .'
             }
         }
 
