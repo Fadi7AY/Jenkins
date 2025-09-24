@@ -1,44 +1,34 @@
 pipeline {
-  agent {
-    docker {
-      image 'docker:27-cli'                 // has docker CLI
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
-      reuseNode true
-    }
-  }
+    agent any
 
-  environment {
-    IMAGE_NAME = "fadi7ay/fadi_jenkins_docker22:${env.BUILD_NUMBER}"
-  }
-
-  stages {
-    stage('Check Docker') {
-      steps {
-        sh 'docker version'
-      }
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        IMAGE_NAME = "fadi7ay/fadi_jenkins_docker22:${env.BUILD_NUMBER}"
     }
 
-    stage('Build Image') {
-      steps {
-        sh 'docker build -t $IMAGE_NAME .'
-      }
-    }
-
-    stage('Login & Push') {
-      steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'dockerhub',
-          usernameVariable: 'DOCKERHUB_USER',
-          passwordVariable: 'DOCKERHUB_PASS'
-        )]) {
-          sh '''
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-            docker push "$IMAGE_NAME"
-            docker logout || true
-          '''
+    stages {
+        stage('Build Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME} ."
+            }
         }
-      }
+
+        stage('Login to Docker Hub') {
+            steps {
+                sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh "docker push ${IMAGE_NAME}"
+            }
+        }
     }
-  }
+
+    post {
+        always {
+            sh 'docker logout'
+        }
+    }
 }
-//test
